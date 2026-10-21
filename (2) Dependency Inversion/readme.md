@@ -1,0 +1,2 @@
+- The principle says that Higher level objects should never depend on concrete implementations of a lower level object . In simple word one class should try to avoid as much as possible any dependency on other concrete classes
+- Service classes are those which contain core business logic , they are the main algorithm driven
