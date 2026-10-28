@@ -1,0 +1,27 @@
+will design a pawn
+
+- Lets say in an interview you were able to think the best possible design for the family of chess pieces
+- Now is the time to test our logic and create objects of these concrete chess piece classes
+- There are 8 pawns is it good to create 8 objects for instanciating and they will be having different positions and characterstics
+- we cant run a loop as we might need to configure each pawn on the creation
+- Now lets say the interviewer the interviewr says that not just the configuration of every pawn is a problem but the creating a pawn object again and again can be an expensive operation also
+- in the real systems this is aproblem of creating multiple objects from a same class
+- Lets say we have an email class and whenever we are creating an order and we shoot up an email and during the Order creation we have to instantiate this email class
+- The body is usually an HTML or similar markup template
+- So for each of the activity we have to populate the body of the Email
+- if we are keeping the HTML layout inside these template files wehnever we have to send an EMail we need to read these files adn populate the data wrt the user adn then send the email
+- And this email class will be called again and again
+- The object creation is expensive
+- So basically creating the Email object again and again is preety expensive
+- Same with the pawn case as well and we cant have the one single object
+- we need multiple pawns
+- same as the email also we needed different objects
+- Object creations is expensive
+- What if instead of creating an email object again and again from the scratch by doing FileIO what if we prepare in memory clones of this object ??
+- In memory copies/clones of this object
+- Instead of creating an object we crate copies of teh base Pawn or the base Email Class
+- The Base object will do the FileIO once and kepe the HTML template in the memory and whenver we need that will copy/clone and will
+- now copying the string from the Base to teh clone object is far more optimized than just creating the Objects
+- Just like chatgpt its just the prompt that will be changing
+- The configs are the one that can be copied / Cloned
+-
