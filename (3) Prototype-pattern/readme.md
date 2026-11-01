@@ -64,3 +64,23 @@ Lets say we have a object of a class and we want to creatae copy of this object
    return copy
    }
    }
+
+Problem with the current solution
+
+- LEts say we have aClass A and it has a copy constructor
+  and Class B extends Class A
+  the problem is i want to copy of B ?
+- will do something like B obj = new A(Sample)
+- And we cannot do this
+  the B needs to have its own child constructor
+- If B has a copy constructor than it will need an Object of A
+- If we forgot to add a copy constructor than thats also a problem
+-
+
+## Improvement
+
+- How about the object whose copy has to be created gives its own cloning method
+- sample.clone()
+- And this method will be implemented in teh corresponding class itself
+- The Copiable class is just the prototype pattern
+- The driver class should not be the one
