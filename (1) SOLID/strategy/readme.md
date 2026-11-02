@@ -27,3 +27,11 @@ Problems Walkthrough
 - So the ideal way is that we put these functions into the
 - Classes can represent behaiviours
 - There will be two seperate classes one for the
+
+
+## Examples
+Interview-style problem + better (Strategy) versions, each with its own readme:
+- `example1/` Payment methods: checkout with if/else on payment type becomes a `PaymentStrategy`.
+- `example2/` Pricing / discount rules: discount by customer type, runtime swap and a lambda strategy.
+- `example3/` Ride fare: switch on vehicle type becomes a `FareStrategy` per vehicle (plus shipping cost note).
+- `example4/` Parking lot pricing: hourly / flat / weekend, picked by vehicle or time and swapped at runtime.

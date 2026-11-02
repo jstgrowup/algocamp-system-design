@@ -162,6 +162,7 @@ class InvoiceRepository {
 ### In this repo
 - **Employee.** The problem is one class that holds data, computes salary, prints reports and saves: [Employee.java](single_responsibility/example1/problem/Employee.java). [better](single_responsibility/example1/better/) splits it into `Employee` (data), `EmployeeSalary`, `EmployeePerformance` and `EmployeeRepository`.
 - **UserManager.** The problem mixes validation, CRUD and activity logging: [UserManager.java](single_responsibility/example2/problem/UserManager.java). In [better](single_responsibility/example2/better/) the logging moves into `ActivityLogger.java`. Each folder has a `Main.java` you can run.
+- **Interview examples.** [example5](single_responsibility/example5/) (an `Invoice` that calculates, prints and saves) and [example6](single_responsibility/example6/) (a library service that mixes borrowing rules, fines and email). Each has `problem/`, `better/` and a readme with the interview question and follow-ups.
 
 ---
 
@@ -246,6 +247,7 @@ Ask: *"If a new type or option arrives tomorrow, which existing files do I have 
 ### In this repo
 - **Notifications.** The problem has a `switch` on the type, so every new channel edits `NotificationSender`: [NotificationSender.java](single_responsibility/example4/problem/NotificationSender.java). The [better](open_close/example4/better/) version has a `Notification` interface and one class per channel, so `NotificationSender` never changes.
 - **Chess.** [open_close/example1](open_close/example1/) starts from one `ChessPiece` class meant to handle every piece with an `if (name == 'R') ... else if (name == 'B') ...` chain, which is the same OCP smell (see the comments in [ChessPieceDraft.java](open_close/example1/problem/ChessPieceDraft.java)). Making each piece its own subclass fixes it.
+- **Interview examples.** [example5](open_close/example5/) (shape area calculator) and [example6](open_close/example6/) (report exporter with a `switch` on format). Adding Triangle or XML means editing the old code in `problem/` and only adding a class in `better/`.
 
 ---
 
@@ -427,6 +429,7 @@ class Penguin extends Bird { // no fly() at all
 ### In this repo
 - **Chess.** In the [problem](open_close/example1/problem/ChessPiece.java) version, `Pawn.move()` throws on a backward move, so code holding a `ChessPiece` can crash. The [better](open_close/example1/better/ChessPiece.java) version returns `true` or `false` instead of throwing. Run each folder's `Main.java` to see it.
 - **Credit cards.** In [problem/](interface_segregation/example1/problem/), `Rupay.intlPayment()` and `Diners.doRefund()` throw, so they can't replace the parent.
+- **Interview examples.** [liskov_substitution/example1](liskov_substitution/example1/) (a bird that can't fly) and [liskov_substitution/example2](liskov_substitution/example2/) (Rectangle and Square). Each readme covers the "is-a vs behaves-as" follow-up.
 
 ---
 
@@ -523,6 +526,7 @@ class OfficeMachine implements Printable, Scannable { // opts in to both
 The credit cards in [interface_segregation/example1](interface_segregation/example1/) are the real-world version of this:
 - [problem/](interface_segregation/example1/problem/): `CreditCard` forces `doRefund`, `intlPayment` and `intlPinPayment` on every card. Diners can't refund and Rupay can't pay internationally, so they throw. Start with [CreditCard.java](interface_segregation/example1/problem/CreditCard.java).
 - [better/](interface_segregation/example1/better/): the parent keeps only swipe, online and tap. Refund, UPI and intl PIN are separate interfaces ([RefundCompatibleCreditCard.java](interface_segregation/example1/better/RefundCompatibleCreditCard.java) and friends), and a card opts in with `implements`.
+- **Interview examples.** [example2](interface_segregation/example2/) (multifunction machine) and [example3](interface_segregation/example3/) (Human and Robot workers).
 
 ---
 
@@ -679,6 +683,7 @@ Use a class when the strategy has state or several methods, and a lambda when it
 - The common contract, `doRefund()`: [RefundStrategy.java](interface_segregation/example1/best/strategies/refund/RefundStrategy.java) (an `interface`).
 - `BankAccountRefundStrategy`, `SameInstrumentRefundStrategy` and `WalletRefundStrategy`: one class per way to refund, in the same folder.
 - Each card holds a `refundStrategy` and its `doRefund()` just calls it. Master, Visa and Amex share the same bank-account strategy instead of copy-pasting it.
+- **Interview examples.** [strategy/example1](strategy/example1/) payment methods, [example2](strategy/example2/) discount rules, [example3](strategy/example3/) ride fare, [example4](strategy/example4/) parking lot pricing. Each has `problem/` (an `if/else` on the type) and `better/` (a strategy per case).
 
 ---
 
@@ -698,9 +703,9 @@ Every example folder has a `problem` and a `better` version, and the OCP/SRP one
 
 | Topic | Folder |
 |---|---|
-| SRP | [single_responsibility](single_responsibility/) |
+| SRP | [single_responsibility](single_responsibility/) (example5 invoice, example6 library) |
 | OCP | [open_close](open_close/) (the notification *problem* is in `single_responsibility/example4`) |
-| LSP | [open_close/example1](open_close/example1/) (chess) and [interface_segregation/example1/problem](interface_segregation/example1/problem/) |
-| ISP | [interface_segregation/example1](interface_segregation/example1/) (`problem`, `better`) |
-| Strategy | [interface_segregation/example1/best](interface_segregation/example1/best/), notes in [strategy](strategy/) |
-| DIP (next) | [(2) Dependency Inversion](<../(2) Dependency Inversion/>) |
+| LSP | [liskov_substitution](liskov_substitution/) (bird, rectangle/square), plus [open_close/example1](open_close/example1/) (chess) and [interface_segregation/example1/problem](interface_segregation/example1/problem/) |
+| ISP | [interface_segregation](interface_segregation/) (example1 cards, example2 machine, example3 worker) |
+| Strategy | [strategy](strategy/) (4 interview examples), plus [interface_segregation/example1/best](interface_segregation/example1/best/) |
+| DIP | [(2) Dependency Inversion](<../(2) Dependency Inversion/>) (example4 notification, example5 light switch) |
