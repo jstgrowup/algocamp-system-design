@@ -165,7 +165,8 @@ figure.diagram figcaption { font-size: .82rem; color: var(--muted); margin-top: 
 .q-meta .badge { padding: 2px 8px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--line); }
 .q-meta .status { margin-left: auto; }
 .q-text { font-weight: 600; margin: 0 0 6px; }
-.opts { display: grid; gap: 7px; margin: 10px 0 0; }
+.opts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; margin: 10px 0 0; }
+.opt span { min-width: 0; overflow-wrap: anywhere; }
 .opt { text-align: left; font: .92rem/1.45 var(--sans); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; cursor: pointer; display: flex; gap: 10px; }
 .opt b { font-family: var(--mono); color: var(--muted); }
 .opt:hover:not([disabled]) { border-color: var(--accent); }
@@ -193,6 +194,37 @@ figure.diagram figcaption { font-size: .82rem; color: var(--muted); margin-top: 
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 @media print { .topbar, .rail, .codeblock .copy, .selfgrade, #menuBtn { display: none !important; } .shell { display: block; } body { background: #fff; } }
+
+/* ---------- text to speech (navbar) ---------- */
+.tts { display: flex; align-items: center; gap: 6px; position: relative; flex: none; }
+.tts .btn { display: inline-flex; align-items: center; gap: 6px; }
+.tts svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+.tts .btn[disabled] { opacity: .5; cursor: not-allowed; }
+.tts .btn.live { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.tts-panel { position: absolute; right: 0; top: calc(100% + 12px); width: 300px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 12px 36px rgba(0,0,0,.22); z-index: 50; }
+.tts-panel label { display: block; font: 700 .7rem var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 12px 0 4px; }
+.tts-panel label:first-child { margin-top: 0; }
+.tts-panel select { width: 100%; font: .88rem var(--sans); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; }
+.tts-panel input[type=range] { width: 100%; accent-color: var(--accent); }
+.tts-panel .hint { margin-top: 12px; }
+.speaking { background: var(--accent-soft) !important; outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+tr.speaking td, tr.speaking th { background: var(--accent-soft) !important; }
+tr.speaking { outline-offset: -2px; }
+.tts [hidden], .tts-panel[hidden] { display: none !important; }
+@media (max-width: 960px) {
+  .tts-label { display: none; }
+  .tts-panel { position: fixed; left: 12px; right: 12px; top: 58px; width: auto; }
+}
+@media (max-width: 560px) {
+  .brand { display: none; }
+  .progress { min-width: 36px; }
+  .topbar { gap: 6px; padding-inline: 12px; }
+  .topbar .btn { padding: 7px 9px; font-size: .78rem; }
+  .tts { gap: 4px; }
+  body.tts-on .progress { display: none; }
+  body.tts-on #menuBtn { margin-right: auto; }
+}
+@media print { .tts { display: none !important; } }
 </style>
 </head>
 <body>
@@ -200,6 +232,26 @@ figure.diagram figcaption { font-size: .82rem; color: var(--muted); margin-top: 
   <button class="btn" id="menuBtn" aria-label="Open contents">Contents</button>
   <div class="brand">Java OOP Notes<small>Parts 1 to 5</small></div>
   <div class="progress" aria-label="Study progress"><div class="bar"><i id="progBar"></i></div><span id="progText">0%</span></div>
+  <div class="tts" id="tts">
+    <button class="btn primary" id="ttsPlay" type="button" aria-label="Listen to this page" title="Listen: reads from the part of the page you are looking at (or from the text you selected)"><svg id="ttsIcon" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z"/></svg><span class="tts-label" id="ttsLabel">Listen</span></button>
+    <button class="btn" id="ttsPrev" type="button" aria-label="Previous block" title="Previous block" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h2v12H3zM14 2.5v11L6 8z"/></svg></button>
+    <button class="btn" id="ttsNext" type="button" aria-label="Next block" title="Next block" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11 2h2v12h-2zM2 2.5v11L10 8z"/></svg></button>
+    <button class="btn" id="ttsStop" type="button" aria-label="Stop reading" title="Stop" hidden><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3h10v10H3z"/></svg></button>
+    <button class="btn" id="ttsCfg" type="button" aria-label="Voice settings" title="Voice settings" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 3h7v1.6H2zM11 2h1.6v3.6H11zM11 3h3v1.6h-3zM2 7.2h3v1.6H2zM7 6h1.6v4H7zM7 7.2h7v1.6H7zM2 11.4h7v1.6H2zM11 10.2h1.6v3.6H11zM11 11.4h3V13h-3z"/></svg></button>
+    <div class="tts-panel" id="ttsPanel" hidden>
+      <label for="ttsVoice">Voice</label>
+      <select id="ttsVoice"></select>
+      <label for="ttsRate">Speed <span id="ttsRateVal">1.0x</span></label>
+      <input id="ttsRate" type="range" min="0.6" max="1.8" step="0.1" value="1">
+      <label for="ttsScope">Keep reading until</label>
+      <select id="ttsScope">
+        <option value="topic">the end of this topic</option>
+        <option value="chapter">the end of this part</option>
+        <option value="all">the end of the page</option>
+      </select>
+      <p class="hint">Code blocks, quizzes and tick lists are skipped. Select some text first to start from it. Voices come from your browser and system.</p>
+    </div>
+  </div>
   <button class="btn" id="themeBtn" title="Switch light or dark theme">Theme</button>
 </header>
 
@@ -5509,6 +5561,200 @@ public class Main {
     Array.prototype.slice.call(document.querySelectorAll('.practice')).forEach(function (h) { if (h._upd) h._upd(); });
   }
   progress();
+})();
+</script>
+<script>
+/* Text to speech: reads the page blocks aloud with the browser's built-in speechSynthesis. */
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var playBtn = $('ttsPlay'), label = $('ttsLabel'), icon = $('ttsIcon'), prevBtn = $('ttsPrev'), nextBtn = $('ttsNext'),
+      stopBtn = $('ttsStop'), cfgBtn = $('ttsCfg'), panel = $('ttsPanel'), voiceSel = $('ttsVoice'), rateIn = $('ttsRate'),
+      rateVal = $('ttsRateVal'), scopeSel = $('ttsScope');
+  var synth = window.speechSynthesis;
+  if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {
+    playBtn.disabled = true; cfgBtn.disabled = true;
+    playBtn.title = 'Text to speech is not supported in this browser';
+    return;
+  }
+
+  /* ----- saved settings ----- */
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('oop.tts') || '{}') || {}; } catch (e) { prefs = {}; }
+  function save() { try { localStorage.setItem('oop.tts', JSON.stringify(prefs)); } catch (e) { /* storage blocked */ } }
+  prefs.rate = parseFloat(prefs.rate) || 1;
+  prefs.scope = prefs.scope || 'topic';
+  rateIn.value = prefs.rate; rateVal.textContent = prefs.rate.toFixed(1) + 'x'; scopeSel.value = prefs.scope;
+
+  /* ----- voices (they load asynchronously in most browsers) ----- */
+  var voices = [];
+  function loadVoices() {
+    var all = synth.getVoices() || [];
+    var en = all.filter(function (v) { return /^en/i.test(v.lang); });
+    voices = en.length ? en : all;
+    voiceSel.innerHTML = '';
+    voices.forEach(function (v, i) {
+      var o = document.createElement('option');
+      o.value = String(i); o.textContent = v.name + ' (' + v.lang + ')';
+      voiceSel.appendChild(o);
+    });
+    var pick = -1;
+    voices.forEach(function (v, i) { if (pick < 0 && prefs.voice && v.voiceURI === prefs.voice) pick = i; });
+    if (pick < 0) voices.forEach(function (v, i) { if (pick < 0 && /^en-IN/i.test(v.lang)) pick = i; });
+    if (pick < 0) voices.forEach(function (v, i) { if (pick < 0 && v.default) pick = i; });
+    voiceSel.value = String(pick < 0 ? 0 : pick);
+  }
+  loadVoices();
+  if (synth.addEventListener) synth.addEventListener('voiceschanged', loadVoices); else synth.onvoiceschanged = loadVoices;
+
+  /* ----- turn page blocks into things to say ----- */
+  var SEL = '.hero h1, .hero p.lead, .ch-head h2, .ch-head p, .topic h3, .topic h4, .topic p, .topic li, .topic tr, .topic .codeblock';
+  var NOTE = { video: 'From the video.', extra: 'Beyond the video.', warn: 'Watch out.', tip: 'Interview tip.' };
+  var SYMBOLS = [[/\.\.\./g, ' '], [/==/g, ' equals equals '], [/!=/g, ' not equals '], [/&&/g, ' and '], [/\|\|/g, ' or '],
+    [/->|=>/g, ' arrow '], [/::/g, ' double colon '], [/\{\}/g, ' curly braces '], [/\[\]/g, ' square brackets '],
+    [/@(?=[A-Za-z])/g, 'at '], [/_/g, ' '], [/[`*]/g, ''], [/\s*\(\s*\)/g, ''], [/[(){}]/g, ', ']];
+  function spoken(el) {
+    var c = el.cloneNode(true);
+    Array.prototype.slice.call(c.querySelectorAll('ul, ol, p, pre, .codeblock, table, .tablewrap, .note, aside, button, svg')).forEach(function (n) { n.remove(); });
+    var t;
+    if (el.matches('tr')) {
+      t = Array.prototype.map.call(el.children, function (cell) { return cell.textContent.replace(/\s+/g, ' ').trim(); }).filter(Boolean).join('. ');
+    } else { t = c.textContent; }
+    SYMBOLS.forEach(function (s) { t = t.replace(s[0], s[1]); });
+    return t.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').trim();
+  }
+  function buildItems() {
+    var out = [];
+    Array.prototype.slice.call(document.querySelectorAll(SEL)).forEach(function (el) {
+      if (el.closest('.practice, .coverage, .practice-sec') || el.matches('.covhead') || el.closest('.rail')) return;
+      var scope = el.closest('.topic, .hero, .ch-head'), chap = el.closest('.chapter, .hero');
+      var prev = out[out.length - 1];
+      if (el.matches('.codeblock')) {
+        if (prev && prev.code) return;
+        out.push({ el: el, text: 'Code example.', code: true, scope: scope, chap: chap }); return;
+      }
+      var text = spoken(el);
+      if (!text) return;
+      var note = el.closest('.note');
+      if (note && note.querySelector('p, li') === el) {
+        Object.keys(NOTE).forEach(function (k) { if (note.classList.contains(k)) text = NOTE[k] + ' ' + text; });
+      }
+      out.push({ el: el, text: text, code: false, scope: scope, chap: chap });
+    });
+    return out;
+  }
+  /* short chunks keep long text from being cut off by some browsers' speech engines */
+  function chunk(text) {
+    var parts = text.split(/(?<=[.!?;:])\s+/), out = [], cur = '';
+    parts.forEach(function (p) {
+      if ((cur + ' ' + p).length > 180 && cur) { out.push(cur); cur = p; } else { cur = cur ? cur + ' ' + p : p; }
+    });
+    if (cur) out.push(cur);
+    var res = [];
+    out.forEach(function (c) {
+      while (c.length > 220) { var cut = c.lastIndexOf(' ', 200); if (cut < 40) cut = 200; res.push(c.slice(0, cut)); c = c.slice(cut).trim(); }
+      if (c) res.push(c);
+    });
+    return res;
+  }
+
+  /* ----- player ----- */
+  var items = [], idx = 0, chunks = [], ci = 0, gen = 0, state = 'idle', utter = null, scopeEl = null, chapEl = null, marked = null;
+
+  function ui() {
+    var active = state !== 'idle';
+    label.textContent = state === 'playing' ? 'Pause' : state === 'paused' ? 'Resume' : 'Listen';
+    icon.innerHTML = state === 'playing' ? '<path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z"/>' : '<path d="M4 2.5v11l9-5.5z"/>';
+    playBtn.setAttribute('aria-label', state === 'playing' ? 'Pause reading' : state === 'paused' ? 'Resume reading' : 'Listen to this page');
+    playBtn.classList.toggle('live', state === 'playing');
+    prevBtn.hidden = nextBtn.hidden = stopBtn.hidden = !active;
+    document.body.classList.toggle('tts-on', active);
+  }
+  function mark(el) {
+    if (marked) marked.classList.remove('speaking');
+    marked = el; if (!el) return;
+    el.classList.add('speaking');
+    var r = el.getBoundingClientRect();
+    if (r.top < 80 || r.bottom > window.innerHeight - 40) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  function inScope(it) {
+    if (prefs.scope === 'all') return true;
+    return prefs.scope === 'chapter' ? it.chap === chapEl : it.scope === scopeEl;
+  }
+  function stop() {
+    gen++; synth.cancel(); state = 'idle'; mark(null); ui();
+  }
+  function playBlock() {
+    if (idx < 0) idx = 0;
+    if (idx >= items.length || !inScope(items[idx])) { stop(); return; }
+    var it = items[idx];
+    mark(it.el);
+    chunks = chunk(it.text); ci = 0;
+    speakChunk();
+  }
+  function speakChunk() {
+    if (ci >= chunks.length) { idx++; playBlock(); return; }
+    var g = gen, u = new SpeechSynthesisUtterance(chunks[ci]);
+    var v = voices[parseInt(voiceSel.value, 10)];
+    if (v) { u.voice = v; u.lang = v.lang; }
+    u.rate = prefs.rate;
+    u.onend = function () { if (g !== gen || state !== 'playing') return; ci++; speakChunk(); };
+    u.onerror = function (e) { if (g !== gen) return; if (e && (e.error === 'canceled' || e.error === 'interrupted')) return; stop(); };
+    utter = u; /* keep a reference: some browsers drop utterances that get garbage collected */
+    synth.speak(u);
+  }
+  function restartHere() { /* re-read the current block, e.g. after a voice or speed change */
+    gen++; synth.cancel();
+    if (state === 'paused') state = 'playing';
+    ui();
+    setTimeout(playBlock, 60);
+  }
+  function startIndex() {
+    var sel = window.getSelection && window.getSelection();
+    if (sel && !sel.isCollapsed && sel.anchorNode) {
+      var n = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+      for (var i = 0; i < items.length; i++) if (items[i].el.contains(n)) return i;
+    }
+    for (var j = 0; j < items.length; j++) {
+      var r = items[j].el.getBoundingClientRect();
+      if (r.height > 0 && r.bottom > 90) return j;
+    }
+    return 0;
+  }
+  function begin() {
+    items = buildItems(); if (!items.length) return;
+    idx = startIndex(); scopeEl = items[idx].scope; chapEl = items[idx].chap;
+    state = 'playing'; gen++; synth.cancel(); ui();
+    setTimeout(playBlock, 60);
+  }
+
+  playBtn.addEventListener('click', function () {
+    if (state === 'idle') { begin(); }
+    else if (state === 'playing') { synth.pause(); state = 'paused'; ui(); }
+    else { synth.resume(); state = 'playing'; ui(); }
+  });
+  stopBtn.addEventListener('click', stop);
+  prevBtn.addEventListener('click', function () { idx = Math.max(0, idx - 1); restartHere(); });
+  nextBtn.addEventListener('click', function () { idx = idx + 1; restartHere(); });
+
+  /* ----- settings panel ----- */
+  function setPanel(open) { panel.hidden = !open; cfgBtn.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+  cfgBtn.addEventListener('click', function (e) { e.stopPropagation(); setPanel(panel.hidden); });
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  document.addEventListener('click', function () { setPanel(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setPanel(false); });
+  voiceSel.addEventListener('change', function () {
+    var v = voices[parseInt(voiceSel.value, 10)]; if (v) { prefs.voice = v.voiceURI; save(); }
+    if (state !== 'idle') restartHere();
+  });
+  rateIn.addEventListener('change', function () {
+    prefs.rate = parseFloat(rateIn.value) || 1; save();
+    if (state !== 'idle') restartHere();
+  });
+  rateIn.addEventListener('input', function () { rateVal.textContent = parseFloat(rateIn.value).toFixed(1) + 'x'; });
+  scopeSel.addEventListener('change', function () { prefs.scope = scopeSel.value; save(); });
+  window.addEventListener('pagehide', function () { synth.cancel(); });
+  ui();
 })();
 </script>
 </body>
